@@ -1,19 +1,6 @@
-const raylib = @import("raylib");
+const std = @import("std");
 
-pub const Board = struct {
-    squares: [8][8]Square,
-};
-
-pub const Square = struct {
-    piece: ?Piece,
-};
-
-pub const Piece = struct {
-    color: raylib.Color,
-    type: PieceType,
-};
-
-pub const PieceType = enum {
+pub const PieceType = enum(u3) {
     pawn,
     knight,
     bishop,
@@ -22,12 +9,63 @@ pub const PieceType = enum {
     king,
 };
 
-pub fn drawBoard(board: *Board) void {
-    for (board.squares) |row| {
-        for (row) |square| {
-            if (square.piece) |piece| {
-                raylib.DrawCircle(square.x, square.y, 10, piece.color);
+pub const PieceColor = enum(u1) {
+    white,
+    black,
+};
+
+pub const Piece = packed struct {
+    color: PieceColor,
+    type: PieceType,
+};
+
+pub const Square = u6;
+pub const BitBoard = u64;
+
+pub const Board = struct {
+    pieces: [2][6]BitBoard,
+    occupied: [2]BitBoard,
+    all: BitBoard = 0,
+
+    pub fn bit(square: Square) BitBoard {
+        return @as(BitBoard, 1) << square;
+    }
+
+    pub fn setPiece(self: *Board, square: Square, piece: Piece) void {
+        const piece_color = @intFromEnum(piece.color);
+        const piece_type = @intFromEnum(piece.type);
+        const square_bit = self.bit(square);
+
+        self.pieces[piece_color][piece_type] |= square_bit;
+        self.occupied[piece_color] |= square_bit;
+        self.all |= square_bit;
+    }
+
+    pub fn removePiece(self: *Board, square: Square) void {
+        const square_bit = self.bit(square);
+        const clear_bit = ~square_bit;
+
+        for (0..2) |piece_color| {
+            for (0..6) |piece_type| {
+                self.pieces[piece_color][piece_type] &= clear_bit;
+            }
+            self.occupied[piece_color] &= clear_bit;
+        }
+        self.all &= clear_bit;
+    }
+
+    pub fn pieceAt(self: Board, square: Square) ?Piece {
+        const mask = self.bit(square);
+        for (0..2) |piece_color| {
+            for (0..6) |piece_type| {
+                if ((self.pieces[piece_color][piece_type] & mask) != 0) {
+                    return Piece{
+                        .color = @enumFromInt(piece_color),
+                        .type = @enumFromInt(piece_type),
+                    };
+                }
             }
         }
+        return null;
     }
-}
+};
