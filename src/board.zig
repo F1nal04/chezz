@@ -34,7 +34,7 @@ pub const Board = struct {
     pub fn setPiece(self: *Board, square: Square, piece: Piece) void {
         const piece_color = @intFromEnum(piece.color);
         const piece_type = @intFromEnum(piece.type);
-        const square_bit = self.bit(square);
+        const square_bit = Board.bit(square);
 
         self.pieces[piece_color][piece_type] |= square_bit;
         self.occupied[piece_color] |= square_bit;
@@ -42,7 +42,7 @@ pub const Board = struct {
     }
 
     pub fn removePiece(self: *Board, square: Square) void {
-        const square_bit = self.bit(square);
+        const square_bit = Board.bit(square);
         const clear_bit = ~square_bit;
 
         for (0..2) |piece_color| {
@@ -55,7 +55,7 @@ pub const Board = struct {
     }
 
     pub fn pieceAt(self: Board, square: Square) ?Piece {
-        const mask = self.bit(square);
+        const mask = Board.bit(square);
         for (0..2) |piece_color| {
             for (0..6) |piece_type| {
                 if ((self.pieces[piece_color][piece_type] & mask) != 0) {
