@@ -1,17 +1,8 @@
-const std = @import("std");
-const Io = std.Io;
-
-const chezz = @import("chezz");
-const board = @import("board.zig");
 const rl = @import("raylib");
+const gui = @import("gui.zig");
 
 pub fn main() !void {
-    std.debug.print("Hello, world!\n", .{});
-
-    const screenWidth = 800;
-    const screenHeight = 450;
-
-    rl.initWindow(screenWidth, screenHeight, "raylib-zig [core] example - basic window");
+    rl.initWindow(gui.BOARD_SIZE, gui.BOARD_SIZE, "chezz");
     defer rl.closeWindow();
 
     rl.setTargetFPS(60);
@@ -20,8 +11,6 @@ pub fn main() !void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(.white);
-
-        rl.drawText("Congrats! You created your first window!", 190, 200, 20, .light_gray);
+        gui.drawBoard();
     }
 }
